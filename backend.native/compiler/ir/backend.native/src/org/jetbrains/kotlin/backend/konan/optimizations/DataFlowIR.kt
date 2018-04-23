@@ -254,6 +254,8 @@ internal object DataFlowIR {
 
         class Singleton(val type: Type, val constructor: FunctionSymbol?) : Node()
 
+        class AllocInstance(val type: Type) : Node()
+
         class FieldRead(val receiver: Edge?, val field: Field, val ir: IrGetField?) : Node()
 
         class FieldWrite(val receiver: Edge?, val field: Field, val value: Edge) : Node()
@@ -295,6 +297,9 @@ internal object DataFlowIR {
 
                 is Node.Singleton ->
                     "        SINGLETON ${node.type}\n"
+
+                is Node.AllocInstance ->
+                    "        ALLOC INSTANCE ${node.type}\n"
 
                 is Node.StaticCall -> {
                     val result = StringBuilder()
