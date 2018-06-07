@@ -74,6 +74,7 @@ void deinitRuntime(RuntimeState* state) {
   DeinitMemory(state->memoryState);
   konanDestructInstance(state);
 }
+
 }  // namespace
 
 extern "C" {
@@ -101,6 +102,26 @@ void Kotlin_deinitRuntimeIfNeeded() {
      deinitRuntime(runtimeState);
      runtimeState = nullptr;
   }
+}
+
+RuntimeState* Kotlin_suspendRuntime() {
+    RuntimeCheck(::runtimeState != nullptr, "Runtime must be active");
+    auto result = ::runtimeState;
+    result->memoryState = SuspendMemory();
+    ::runtimeState = nullptr;
+#if !KONAN_NO_THREADS
+     __sync_synchronize();
+#endif
+    return result;
+}
+
+void Kotlin_resumeRuntime(RuntimeState* state) {
+    RuntimeCheck(::runtimeState == nullptr, "Runtime must not be active");
+    ::runtimeState = state;
+    ResumeMemory(state->memoryState);
+#if !KONAN_NO_THREADS
+    __sync_synchronize();
+#endif
 }
 
 }  // extern "C"
